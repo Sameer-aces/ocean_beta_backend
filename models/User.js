@@ -17,6 +17,11 @@ const UserSchema = new Schema({
   Role: {
     type: String,
     required: true,
+    default: "Premium",
+  },
+  verified: {
+    type: Boolean,
+    default: false,
   },
   //   date: {
   //     type: Date,

@@ -1,4 +1,5 @@
 const express = require("express");
+
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
@@ -13,9 +14,6 @@ var userRoute = require("./routes/api/users");
 var path = require("path");
 var logger = require("morgan");
 var cookieParser = require("cookie-parser");
-var createError = require("http-errors");
-// var nodeRoutes = require("./routes/index");
-// app.set("validation", path.join(__dirname, "validation"));
 app.set("view engine", "ejs");
 app.use(logger("dev"));
 app.use(bodyParser.json());
@@ -23,6 +21,21 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 const BASE_URL = process.env.BASE_URL;
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const { modelName } = require("./models/User");
+
+const db = require("./config/keys").mongoURI;
+// const sql = require('mssql')
+
+// async () => {
+//     try {
+//         // make sure that any items are correctly URL encoded in the connection string
+//         await sql.connect('Server=localhost,1433;Database=database;User Id=username;Password=password;Encrypt=true')
+//         const result = await sql.query`select * from Persons where id = 1`
+//         console.dir(result)
+//     } catch (err) {
+//         // ... error checks
+//     }
 
 app.options("*", cors());
 //
@@ -31,6 +44,7 @@ app.use(
     extended: false,
   })
 );
+
 const corsOptions = {
   origin: process.env.BASE_URL,
   credentials: true,
@@ -72,16 +86,15 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json());
 
-const db = require("./config/keys").mongoURI;
 // const db = process.env.DATABASE;
-console.log("change");
 app.get("/", (req, res) => {
   res.status(201).json("server started");
 });
 
+
 mongoose
   .connect(db, { useNewUrlParser: true })
-  .then(() => console.log("Mongoose Connected"))
+  .then((res) => console.log("Mongoose Connected"))
   .catch((err) => console.log(err));
 app.use(passport.initialize());
 

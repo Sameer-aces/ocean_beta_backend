@@ -7,6 +7,7 @@ const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
 const User = require("../../models/User");
 var mysql = require("mysql");
+const sql = require("mssql/msnodesqlv8");
 
 router.post("/schema", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -61,7 +62,6 @@ router.post("/databaseTable", function (req, res, next) {
 });
 router.post("/queryGeneration", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  console.log(req.body);
   var connection = mysql.createConnection({
     host: req.body.connectivity.name,
     port: req.body.connectivity.port,
@@ -70,24 +70,63 @@ router.post("/queryGeneration", function (req, res, next) {
     database: req.body.connectivity.database,
   });
   connection.query(req.body.requestQuery, function (err, rows) {
-    console.log(rows);
     res.status(200).json(rows);
+  });
+});
+router.post("/forgotPassword", (req, res) => {
+  const email = req.body.email;
+  User.findOne({ email }).then((user) => {
+    if (!user) {
+      return res.json({ email: "Email not found", otp: "" });
+    } else {
+      return res.json({
+        email: "Otp Send Succesfully",
+        // otp: req.body.otp,
+        user: user,
+      });
+    }
+  });
+});
+router.post("/updatePassword", (req, res) => {
+  const email = req.body.email;
+  User.findOne({ email }).then((user) => {
+    if (!user) {
+      return res.json({ email: "Email not found", otp: "" });
+    } else {
+      user.password = req.body.password;
+      bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(user.password, salt, (err, hash) => {
+          user.password = hash;
+          user.save().catch((err) => console.log(err));
+        });
+      });
+      return res.json({ email: "user Exists", otp: req.body.otp, user: user });
+    }
+  });
+});
+router.post("/checkemail", (req, res) => {
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      return res.json({ email: "Email already exists" });
+    } else {
+      return res.json({ email: "new user" });
+    }
   });
 });
 router.post("/register", (req, res) => {
   const { errors, isValid } = validateRegisterInput(req.body);
   if (!isValid) {
-    return res.status(400).json(errors);
+    return res.status(400).json();
   }
   User.findOne({ email: req.body.email }).then((user) => {
     if (user) {
-      return res.status(400).json({ email: "Email already exists" });
+      return res.json({ email: "Email already exists" });
     } else {
       const newUser = new User({
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
-        Role: req.body.Role,
+        // Role: req.body.Role,     //temporary hold do not remove
       });
       bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(newUser.password, salt, (err, hash) => {
@@ -101,13 +140,17 @@ router.post("/register", (req, res) => {
     }
   });
 });
+
 router.post("/login", (req, res) => {
+  // console.log(res, res, "here");
   const { errors, isValid } = validateLoginInput(req.body);
   if (!isValid) {
     return res.status(400).json(errors);
   }
+
   const email = req.body.email;
   const password = req.body.password;
+
   User.findOne({ email }).then((user) => {
     if (!user) {
       return res.status(404).json({ emailnotfound: "Email not found" });
