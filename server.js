@@ -1,5 +1,4 @@
 const express = require("express");
-
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
@@ -21,21 +20,9 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 const BASE_URL = process.env.BASE_URL;
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const { modelName } = require("./models/User");
 
 const db = require("./config/keys").mongoURI;
-// const sql = require('mssql')
-
-// async () => {
-//     try {
-//         // make sure that any items are correctly URL encoded in the connection string
-//         await sql.connect('Server=localhost,1433;Database=database;User Id=username;Password=password;Encrypt=true')
-//         const result = await sql.query`select * from Persons where id = 1`
-//         console.dir(result)
-//     } catch (err) {
-//         // ... error checks
-//     }
 
 app.options("*", cors());
 //
@@ -62,12 +49,6 @@ app.use(
   })
 );
 app.use(flash());
-// app.use("/", nodeRoutes);
-// app.use("/database", userRoute);
-// app.use(function (req, res, next) {
-//   next(createError(404));
-// });
-
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
@@ -90,7 +71,6 @@ app.use(bodyParser.json());
 app.get("/", (req, res) => {
   res.status(201).json("server started");
 });
-
 
 mongoose
   .connect(db, { useNewUrlParser: true })

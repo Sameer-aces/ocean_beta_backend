@@ -7,7 +7,6 @@ const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
 const User = require("../../models/User");
 var mysql = require("mysql");
-const sql = require("mssql/msnodesqlv8");
 
 router.post("/schema", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
